@@ -1,15 +1,15 @@
 slam_3d_node:
   ros__parameters:
-    map_cloud_dir: "/tmp/pslam_data/"
+    map_cloud_dir: "tmp/pslam_data/"
     param_files_dir: "" # SLAM parameters must be located under plain_slam_ros2/config/
 
-    imu_pose_topic: "/pslam/imu_pose"
-    deskewed_scan_cloud_topic: "/pslam/deskewed_scan_cloud"
+    imu_pose_topic: "pslam/imu_pose"
+    deskewed_scan_cloud_topic: "pslam/deskewed_scan_cloud"
 
-    filtered_map_cloud_topic: "/pslam/filtered_map_cloud"
-    graph_nodes_topic: "/pslam/pose_graph_nodes"
-    odom_edges_topic: "/pslam/pose_graph_odom_edges"
-    loop_edges_topic: "/pslam/pose_graph_loop_edges"
+    filtered_map_cloud_topic: "pslam/filtered_map_cloud"
+    graph_nodes_topic: "pslam/pose_graph_nodes"
+    odom_edges_topic: "pslam/pose_graph_odom_edges"
+    loop_edges_topic: "pslam/pose_graph_loop_edges"
 
     map_frame: "map"
     # odometry and imu frames are defined in lio_3d_config.yaml

@@ -5,14 +5,14 @@ lio_3d_node:
     map_cloud_dir: "/tmp/pslam_data/"
     param_files_dir: "" # LIO parameters must be located under plain_slam_ros2/config/
 
-    pointcloud_topic: "/livox/lidar"
-    imu_topic: "/livox/imu"
+    pointcloud_topic: "livox/lidar"
+    imu_topic: "livox/imu"
 
-    imu_pose_topic: "/pslam/imu_pose"
-    imu_odom_topic: "/pslam/imu_odom"
-    lio_map_cloud_topic: "/pslam/lio_map_cloud"
-    aligned_scan_cloud_topic: "/pslam/aligned_scan_cloud"
-    deskewed_scan_cloud_topic: "/pslam/deskewed_scan_cloud"
+    imu_pose_topic: "pslam/imu_pose"
+    imu_odom_topic: "pslam/imu_odom"
+    lio_map_cloud_topic: "pslam/lio_map_cloud"
+    aligned_scan_cloud_topic: "pslam/aligned_scan_cloud"
+    deskewed_scan_cloud_topic: "pslam/deskewed_scan_cloud"
 
     odom_frame: "odom"
     imu_frame: "imu"

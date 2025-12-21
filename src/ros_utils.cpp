@@ -64,7 +64,9 @@ void ParseLivoxCloud(
     std::memcpy(&scan_intensities[i], point_ptr + intensity_offset, sizeof(float));
 
     std::memcpy(&scan_stamps[i], point_ptr + timestamp_offset, sizeof(double));
-    scan_stamps[i] *= 1e-9;
+    // This implementation assumes the use of the https://github.com/scorpio-robot/mid360_driver instead of livox_ros_driver2.
+    // Therefore, no scaling (*1e-9) is applied to the timestamps.
+    // scan_stamps[i] *= 1e-9;
     // printf("scan_stamps[%lu] = %.10lf\n", i, scan_stamps[i]);
   }
 }

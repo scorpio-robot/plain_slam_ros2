@@ -36,10 +36,12 @@
 
 #include <plain_slam_ros2/ros_utils.hpp>
 
+namespace plain_slam {
+
 class LIO3DNode : public rclcpp::Node {
  public:
-  LIO3DNode()
-  : Node("lio_3d_node") {
+  explicit LIO3DNode(const rclcpp::NodeOptions & options)
+  : Node("lio_3d_node", options) {
     // Get the LiDAR type to parse PointCloud2 messages
     this->declare_parameter<std::string>("lidar_type", "livox");    
     this->get_parameter("lidar_type", lidar_type_);
@@ -256,9 +258,7 @@ class LIO3DNode : public rclcpp::Node {
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };
 
-int main(int argc, char** argv) {
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<LIO3DNode>());
-  rclcpp::shutdown();
-  return 0;
-}
+}  // namespace plain_slam
+
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(plain_slam::LIO3DNode)

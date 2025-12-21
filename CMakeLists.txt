@@ -1,28 +1,20 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.11)
 project(plain_slam_ros2)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic -O2)
-endif()
+## Use C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+## Export compile commands for clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# find dependencies
-find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclpy REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(nav_msgs REQUIRED)
-find_package(tf2_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
-find_package(tf2_eigen REQUIRED)
-find_package(visualization_msgs REQUIRED)
+#######################
+## Find dependencies ##
+#######################
 
+find_package(ament_cmake_auto REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Sophus REQUIRED)
-find_package(yaml-cpp REQUIRED)
 
 find_package(nanoflann QUIET)
 
@@ -41,151 +33,49 @@ if(NOT nanoflann_FOUND OR nanoflann_VERSION VERSION_LESS_EQUAL "1.6.0")
   set(nanoflann_INCLUDE_DIRS ${nanoflann_SOURCE_DIR}/include)
 endif()
 
+ament_auto_find_build_dependencies()
 
+###########
+## Build ##
+###########
 
-# lio_3d_node
-
-add_executable(lio_3d_node
-  src/lio_3d_node.cpp
-  src/ros_utils.cpp
-  src/io.cpp
-  src/lie_algebra.cpp
-  src/lio_3d_interface.cpp
-  src/imu_preintegrator.cpp
-  src/gravity_direc_estimator.cpp
-  src/keyframe_detector.cpp
-  src/voxel_grid_filter.cpp
-  src/normal_map.cpp
-  src/hierarchical_geometric_observer.cpp
-  src/joint_optimizer.cpp)
-  # src/lidar_imu_calibration.cpp)
-
-target_include_directories(lio_3d_node PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  ${EIGEN3_INCLUDE_DIRS}
-  ${nanoflann_INCLUDE_DIRS})
-
-target_compile_features(lio_3d_node PUBLIC c_std_99 cxx_std_17)
-
-ament_target_dependencies(
-  lio_3d_node
-  "rclcpp"
-  "rclpy"
-  "std_msgs"
-  "sensor_msgs"
-  "geometry_msgs"
-  "nav_msgs"
-  "tf2_msgs"
-  "tf2_ros"
-  "tf2_eigen"
-  "visualization_msgs"
+# lio_3d_node (as component library)
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  DIRECTORY src
 )
 
-target_link_libraries(lio_3d_node yaml-cpp)
-
-install(TARGETS lio_3d_node DESTINATION lib/${PROJECT_NAME})
-
-
-
-# slam_3d_node
-
-add_executable(slam_3d_node
-  src/slam_3d_node.cpp
-  src/ros_utils.cpp
-  src/lie_algebra.cpp
-  src/slam_3d_interface.cpp
-  src/io.cpp
-  src/keyframe_detector.cpp
-  src/voxel_grid_filter.cpp
-  src/gicp.cpp
-  src/graph_optimizer.cpp)
-
-target_include_directories(slam_3d_node PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
+target_include_directories(${PROJECT_NAME} PUBLIC
   ${EIGEN3_INCLUDE_DIRS}
-  ${nanoflann_INCLUDE_DIRS})
-
-target_compile_features(slam_3d_node PUBLIC c_std_99 cxx_std_17)
-
-ament_target_dependencies(
-  slam_3d_node
-  "rclcpp"
-  "rclpy"
-  "std_msgs"
-  "sensor_msgs"
-  "geometry_msgs"
-  "nav_msgs"
-  "tf2_msgs"
-  "tf2_ros"
-  "tf2_eigen"
-  "visualization_msgs"
+  ${nanoflann_INCLUDE_DIRS}
 )
 
-target_link_libraries(slam_3d_node yaml-cpp)
+target_link_libraries(${PROJECT_NAME} yaml-cpp)
 
-install(TARGETS slam_3d_node DESTINATION lib/${PROJECT_NAME})
-
-
-
-# pc2_to_pcd_node
-
-add_executable(pc2_to_pcd_node
-  src/pc2_to_pcd_node.cpp
-  src/ros_utils.cpp
-  src/io.cpp
-  src/voxel_grid_filter.cpp)
-
-target_include_directories(pc2_to_pcd_node PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  ${EIGEN3_INCLUDE_DIRS}
-  ${nanoflann_INCLUDE_DIRS})
-
-target_compile_features(pc2_to_pcd_node PUBLIC c_std_99 cxx_std_17)
-
-ament_target_dependencies(
-  pc2_to_pcd_node
-  "rclcpp"
-  "rclpy"
-  "sensor_msgs"
-  "nav_msgs"
-  "visualization_msgs"
-  "tf2_msgs"
-  "tf2_ros"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "plain_slam::LIO3DNode"
+  EXECUTABLE lio_3d_node
 )
 
-install(TARGETS pc2_to_pcd_node DESTINATION lib/${PROJECT_NAME})
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "plain_slam::SLAM3DNode"
+  EXECUTABLE slam_3d_node
+)
 
-
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "plain_slam::PC2ToPCDNode"
+  EXECUTABLE pc2_to_pcd_node
+)
 
 # lidar_lidar_calibration_node
-
-add_executable(lidar_lidar_calibration_node
+ament_auto_add_executable(lidar_lidar_calibration_node
   src/lidar_lidar_calibration_node.cpp
-  src/io.cpp
-  src/voxel_grid_filter.cpp
-  src/lie_algebra.cpp
-  src/gicp.cpp)
-
-target_include_directories(lidar_lidar_calibration_node PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  ${EIGEN3_INCLUDE_DIRS}
-  ${nanoflann_INCLUDE_DIRS})
-
-target_compile_features(lidar_lidar_calibration_node PUBLIC c_std_99 cxx_std_17)
-
-ament_target_dependencies(
-  lidar_lidar_calibration_node
-  "rclcpp"
-  "rclpy"
 )
 
-install(TARGETS lidar_lidar_calibration_node DESTINATION lib/${PROJECT_NAME})
+target_link_libraries(lidar_lidar_calibration_node ${PROJECT_NAME})
 
-
+#############
+## Testing ##
+#############
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -194,9 +84,13 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_package()
+#############
+## Install ##
+#############
 
-install(
-  DIRECTORY launch config
-  DESTINATION share/${PROJECT_NAME}/
+ament_auto_package(
+  USE_SCOPED_HEADER_INSTALL_DIR
+  INSTALL_TO_SHARE
+  launch
+  config
 )

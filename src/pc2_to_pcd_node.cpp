@@ -31,10 +31,12 @@
 
 #include <plain_slam_ros2/ros_utils.hpp>
 
+namespace plain_slam {
+
 class PC2ToPCDNode : public rclcpp::Node {
  public:
-  PC2ToPCDNode()
-  : Node("pc2_to_pcd_node") {
+  explicit PC2ToPCDNode(const rclcpp::NodeOptions & options)
+  : Node("pc2_to_pcd_node", options) {
     this->declare_parameter<std::string>("pointcloud_topic", "/livox/lidar");
     std::string pointcloud_topic;
     this->get_parameter("pointcloud_topic", pointcloud_topic);
@@ -97,9 +99,7 @@ class PC2ToPCDNode : public rclcpp::Node {
   std::vector<float> intensities_;
 };
 
-int main(int argc, char** argv) {
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<PC2ToPCDNode>());
-  rclcpp::shutdown();
-  return 0;
-}
+}  // namespace plain_slam
+
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(plain_slam::PC2ToPCDNode)

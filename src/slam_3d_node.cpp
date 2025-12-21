@@ -40,10 +40,12 @@
 
 #include <plain_slam_ros2/ros_utils.hpp>
 
+namespace plain_slam {
+
 class SLAM3DNode : public rclcpp::Node {
  public:
-  SLAM3DNode()
-  : Node("slam_3d_node") {
+  explicit SLAM3DNode(const rclcpp::NodeOptions & options)
+  : Node("slam_3d_node", options) {
     this->declare_parameter<std::string>("map_cloud_dir", "/tmp/pslam_data/");
     std::string map_cloud_dir = "/tmp/pslam_data/";
     this->get_parameter("map_cloud_dir", map_cloud_dir);
@@ -201,9 +203,7 @@ class SLAM3DNode : public rclcpp::Node {
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };
 
-int main(int argc, char** argv) {
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<SLAM3DNode>());
-  rclcpp::shutdown();
-  return 0;
-}
+}  // namespace plain_slam
+
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(plain_slam::SLAM3DNode)

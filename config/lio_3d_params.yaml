@@ -1,13 +1,13 @@
 initial_pose:
   translation: [0.0, 0.0, 0.0]
-  rotation_matrix: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+  rotation: [0.0, 0.0, 0.0]
 
 extrinsics:
   imu_to_lidar:
     translation: [0.0110, 0.02329, -0.04412] # livox mid360
-    rotation_matrix: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0] # livox mid360 
+    rotation: [0.0, 0.0, 0.0]  # livox mid360
     # translation: [-0.006253, 0.011775, 0.028535] # outster os1
-    # rotation_matrix: [-1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 1.0] # outster os1
+    # rotation: [3.14159265, 3.14159265, 0.0]  # outster os1
 
 imu_params:
   acc_scale: 9.79 # livox

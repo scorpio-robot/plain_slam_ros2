@@ -71,29 +71,33 @@ void LIO3DInterface::ReadLIOParams() {
   const YAML::Node config = YAML::LoadFile(yaml_file);
 
   const auto initial_trans_vec = config["initial_pose"]["translation"];
-  const auto initial_rot_mat_vec = config["initial_pose"]["rotation_matrix"];
+  const auto initial_rot_vec = config["initial_pose"]["rotation"];
   const Eigen::Vector3f initial_trans(
     initial_trans_vec[0].as<float>(),
     initial_trans_vec[1].as<float>(),
     initial_trans_vec[2].as<float>());
-  Eigen::Matrix3f initial_rot_mat;
-  initial_rot_mat << 
-    initial_rot_mat_vec[0].as<float>(), initial_rot_mat_vec[1].as<float>(), initial_rot_mat_vec[2].as<float>(),
-    initial_rot_mat_vec[3].as<float>(), initial_rot_mat_vec[4].as<float>(), initial_rot_mat_vec[5].as<float>(),
-    initial_rot_mat_vec[6].as<float>(), initial_rot_mat_vec[7].as<float>(), initial_rot_mat_vec[8].as<float>();
+  const float roll = initial_rot_vec[0].as<float>();
+  const float pitch = initial_rot_vec[1].as<float>();
+  const float yaw = initial_rot_vec[2].as<float>();
+  const Eigen::Matrix3f initial_rot_mat = 
+    (Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ()) *
+     Eigen::AngleAxisf(pitch, Eigen::Vector3f::UnitY()) *
+     Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX())).toRotationMatrix();
   imu_state_.T = Sophus::SE3f(initial_rot_mat, initial_trans);
 
   const auto T_imu_lidar_trans_vec = config["extrinsics"]["imu_to_lidar"]["translation"];
-  const auto T_imu_lidar_rot_mat_vec = config["extrinsics"]["imu_to_lidar"]["rotation_matrix"];
+  const auto T_imu_lidar_rot_vec = config["extrinsics"]["imu_to_lidar"]["rotation"];
   const Eigen::Vector3f T_imu_lidar_trans(
     T_imu_lidar_trans_vec[0].as<float>(),
     T_imu_lidar_trans_vec[1].as<float>(),
     T_imu_lidar_trans_vec[2].as<float>());
-  Eigen::Matrix3f T_imu_lidar_rot_mat;
-  T_imu_lidar_rot_mat << 
-    T_imu_lidar_rot_mat_vec[0].as<float>(), T_imu_lidar_rot_mat_vec[1].as<float>(), T_imu_lidar_rot_mat_vec[2].as<float>(),
-    T_imu_lidar_rot_mat_vec[3].as<float>(), T_imu_lidar_rot_mat_vec[4].as<float>(), T_imu_lidar_rot_mat_vec[5].as<float>(),
-    T_imu_lidar_rot_mat_vec[6].as<float>(), T_imu_lidar_rot_mat_vec[7].as<float>(), T_imu_lidar_rot_mat_vec[8].as<float>();
+  const float til_roll = T_imu_lidar_rot_vec[0].as<float>();
+  const float til_pitch = T_imu_lidar_rot_vec[1].as<float>();
+  const float til_yaw = T_imu_lidar_rot_vec[2].as<float>();
+  const Eigen::Matrix3f T_imu_lidar_rot_mat = 
+    (Eigen::AngleAxisf(til_yaw, Eigen::Vector3f::UnitZ()) *
+     Eigen::AngleAxisf(til_pitch, Eigen::Vector3f::UnitY()) *
+     Eigen::AngleAxisf(til_roll, Eigen::Vector3f::UnitX())).toRotationMatrix();
   imu_state_.Til = Sophus::SE3f(T_imu_lidar_rot_mat, T_imu_lidar_trans);
 
   acc_scale_ = config["imu_params"]["acc_scale"].as<float>();

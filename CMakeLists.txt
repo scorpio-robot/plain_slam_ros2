@@ -5,6 +5,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic -O2)
 endif()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -21,6 +23,23 @@ find_package(visualization_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Sophus REQUIRED)
 find_package(yaml-cpp REQUIRED)
+
+find_package(nanoflann QUIET)
+
+if(NOT nanoflann_FOUND OR nanoflann_VERSION VERSION_LESS_EQUAL "1.6.0")
+  message(STATUS "System-installed nanoflann version <= 1.6.0 or not found. Fetching nanoflann v1.8.0 via FetchContent...")
+
+  include(FetchContent)
+  FetchContent_Declare(
+    nanoflann
+    GIT_REPOSITORY https://github.com/jlblancoc/nanoflann.git
+    GIT_TAG v1.8.0
+  )
+
+  FetchContent_Populate(nanoflann)
+  # Since nanoflann is header-only, we just need to include its headers
+  set(nanoflann_INCLUDE_DIRS ${nanoflann_SOURCE_DIR}/include)
+endif()
 
 
 
@@ -44,7 +63,8 @@ add_executable(lio_3d_node
 target_include_directories(lio_3d_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-  ${EIGEN3_INCLUDE_DIRS})
+  ${EIGEN3_INCLUDE_DIRS}
+  ${nanoflann_INCLUDE_DIRS})
 
 target_compile_features(lio_3d_node PUBLIC c_std_99 cxx_std_17)
 
@@ -84,7 +104,8 @@ add_executable(slam_3d_node
 target_include_directories(slam_3d_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-  ${EIGEN3_INCLUDE_DIRS})
+  ${EIGEN3_INCLUDE_DIRS}
+  ${nanoflann_INCLUDE_DIRS})
 
 target_compile_features(slam_3d_node PUBLIC c_std_99 cxx_std_17)
 
@@ -119,7 +140,8 @@ add_executable(pc2_to_pcd_node
 target_include_directories(pc2_to_pcd_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-  ${EIGEN3_INCLUDE_DIRS})
+  ${EIGEN3_INCLUDE_DIRS}
+  ${nanoflann_INCLUDE_DIRS})
 
 target_compile_features(pc2_to_pcd_node PUBLIC c_std_99 cxx_std_17)
 
@@ -150,7 +172,8 @@ add_executable(lidar_lidar_calibration_node
 target_include_directories(lidar_lidar_calibration_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-  ${EIGEN3_INCLUDE_DIRS})
+  ${EIGEN3_INCLUDE_DIRS}
+  ${nanoflann_INCLUDE_DIRS})
 
 target_compile_features(lidar_lidar_calibration_node PUBLIC c_std_99 cxx_std_17)
 
@@ -177,5 +200,3 @@ install(
   DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}/
 )
-
-

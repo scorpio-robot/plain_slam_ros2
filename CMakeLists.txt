@@ -13,10 +13,22 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #######################
 
 find_package(ament_cmake_auto REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(Sophus REQUIRED)
-
+find_package(Sophus QUIET)
 find_package(nanoflann QUIET)
+
+if(NOT Sophus_FOUND)
+  message(STATUS "System-installed Sophus not found. Fetching Sophus via FetchContent...")
+
+  include(FetchContent)
+  FetchContent_Declare(
+    Sophus
+    GIT_REPOSITORY https://github.com/strasdat/Sophus.git
+    GIT_TAG 1.22.10
+  )
+
+  FetchContent_MakeAvailable(Sophus)
+endif()
+
 
 if(NOT nanoflann_FOUND OR nanoflann_VERSION VERSION_LESS_EQUAL "1.6.0")
   message(STATUS "System-installed nanoflann version <= 1.6.0 or not found. Fetching nanoflann v1.8.0 via FetchContent...")

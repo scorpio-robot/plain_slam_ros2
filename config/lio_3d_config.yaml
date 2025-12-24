@@ -16,3 +16,4 @@ lio_3d_node:
 
     odom_frame: "odom"
     imu_frame: "imu"
+    publish_tf: true  # Whether to publish TF transform from `odom_frame` to `imu_frame`

@@ -109,6 +109,9 @@ class SLAM3DNode : public rclcpp::Node {
     this->get_parameter("odom_frame", odom_frame_);
     this->get_parameter("imu_frame", imu_frame_);
 
+    this->declare_parameter<bool>("publish_tf", true);
+    this->get_parameter("publish_tf", publish_tf_);
+
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
     slam_.ReadSLAMParams();
@@ -153,8 +156,10 @@ class SLAM3DNode : public rclcpp::Node {
 
     const Sophus::SE3f slam_pose = slam_.GetSLAMPose();
     const Sophus::SE3f T_map_odom = slam_pose * odom_pose.inverse();
-    BroadcastTransform(tf_broadcaster_, map_frame_, odom_frame_,
-      pose->header.stamp, T_map_odom);
+    if (publish_tf_) {
+      BroadcastTransform(tf_broadcaster_, map_frame_, odom_frame_,
+        pose->header.stamp, T_map_odom);
+    }
 
     // Publish the map and pose graph data
     if (slam_.IsPoseGraphUpdated()) {
@@ -199,6 +204,7 @@ class SLAM3DNode : public rclcpp::Node {
   std::string map_frame_;
   std::string odom_frame_;
   std::string imu_frame_;
+  bool publish_tf_;
 
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };

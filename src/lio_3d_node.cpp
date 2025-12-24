@@ -126,6 +126,9 @@ class LIO3DNode : public rclcpp::Node {
     this->get_parameter("odom_frame", odom_frame_);
     this->get_parameter("imu_frame", imu_frame_);
 
+    this->declare_parameter<bool>("publish_tf", true);
+    this->get_parameter("publish_tf", publish_tf_);
+
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
     // This node broadcasts a transformation from odom_frame_ to imu_frame_,
@@ -181,8 +184,10 @@ class LIO3DNode : public rclcpp::Node {
     const Sophus::SE3f imu_pose = lio_.GetIMUPose();
     PublishePose(imu_pose_pub_, odom_frame_, msg->header.stamp, imu_pose);
 
-    BroadcastTransform(tf_broadcaster_, odom_frame_, imu_frame_,
-      msg->header.stamp, imu_pose);
+    if (publish_tf_) {
+      BroadcastTransform(tf_broadcaster_, odom_frame_, imu_frame_,
+        msg->header.stamp, imu_pose);
+    }
 
     const pslam::PointCloud3f aligned_scan_cloud = lio_.GetAlignedScanCloud();
     const std::vector<float> clipped_scan_intensities = lio_.GetClippedScanIntensities();
@@ -254,6 +259,7 @@ class LIO3DNode : public rclcpp::Node {
 
   std::string odom_frame_;
   std::string imu_frame_;
+  bool publish_tf_;
 
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };

@@ -13,3 +13,4 @@ slam_3d_node:
 
     map_frame: "map"
     # odometry and imu frames are defined in lio_3d_config.yaml
+    publish_tf: true  # Whether to publish TF transform from `map_frame` to `odom_frame`

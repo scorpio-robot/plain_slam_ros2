@@ -152,6 +152,11 @@ class LIO3DNode : public rclcpp::Node {
 
     lio_.ReadLIOParams();
 
+    // Create timer to publish map cloud at 1Hz
+    map_publish_timer_ = this->create_wall_timer(
+      std::chrono::milliseconds(1000),
+      std::bind(&LIO3DNode::MapPublishTimerCallback, this));
+
     RCLCPP_INFO(this->get_logger(), "LIO 3D node initialized");
   }
 
@@ -203,6 +208,14 @@ class LIO3DNode : public rclcpp::Node {
       const pslam::PointCloud3f lio_map_cloud = lio_.GetNormalMapCloud();
       PublishPointCloud(lio_map_cloud_pub_, odom_frame_, msg->header.stamp, lio_map_cloud);
       lio_.SetMapUpdated(false);
+    }
+  }
+
+  void MapPublishTimerCallback() {
+    const pslam::PointCloud3f lio_map_cloud = lio_.GetNormalMapCloud();
+    if (!lio_map_cloud.empty()) {
+      PublishPointCloud(lio_map_cloud_pub_,
+        odom_frame_, rclcpp::Clock().now(), lio_map_cloud);
     }
   }
 
@@ -262,6 +275,8 @@ class LIO3DNode : public rclcpp::Node {
   bool publish_tf_;
 
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+
+  rclcpp::TimerBase::SharedPtr map_publish_timer_;
 };
 
 }  // namespace plain_slam

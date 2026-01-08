@@ -10,7 +10,7 @@ keyframe:
 loop_closure:
   num_loop_candidates: 10
   loop_detection_distance_thresh: 30.0
-  loop_detection_height_thresh: 10.0
+  loop_detection_height_thresh: 1.5
   error_average_th: 1.0
   active_points_rate_th: 0.5
   gicp_max_iteration: 5

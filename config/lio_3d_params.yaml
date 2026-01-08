@@ -10,13 +10,13 @@ extrinsics:
     # rotation: [3.14159265, 3.14159265, 0.0]  # outster os1
 
 imu_params:
-  acc_scale: 9.79 # livox
-  # acc_scale: 1.0
+  # acc_scale: 9.79 # livox
+  acc_scale: 1.0
 
 keyframe:
   distance_th: 1.0
   angle_th: 1000.0 # degree
-  min_active_points_rate: 0.8
+  min_active_points_rate: 0.9
 
 scan_cloud_preprocess:
   clip_range: 1.0

@@ -23,7 +23,7 @@ if(NOT Sophus_FOUND)
   FetchContent_Declare(
     Sophus
     GIT_REPOSITORY https://github.com/strasdat/Sophus.git
-    GIT_TAG 1.22.10
+    GIT_TAG 1.24.6
   )
 
   FetchContent_MakeAvailable(Sophus)
@@ -37,7 +37,7 @@ if(NOT nanoflann_FOUND OR nanoflann_VERSION VERSION_LESS_EQUAL "1.6.0")
   FetchContent_Declare(
     nanoflann
     GIT_REPOSITORY https://github.com/jlblancoc/nanoflann.git
-    GIT_TAG v1.8.0
+    GIT_TAG v1.9.0
   )
 
   FetchContent_Populate(nanoflann)

@@ -4,6 +4,8 @@ lio_3d_node:
     use_as_localizer: false
     map_cloud_dir: "tmp/pslam_data/"
     param_files_dir: "" # LIO parameters must be located under plain_slam_ros2/config/
+    save_trajectory: false
+    trajectory_dir: "tmp/pslam/trajectory"
 
     pointcloud_topic: "livox/lidar"
     imu_topic: "livox/imu"

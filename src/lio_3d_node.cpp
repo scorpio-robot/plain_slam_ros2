@@ -31,6 +31,11 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 
 #include <chrono>
+#include <ctime>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
 
 #include <plain_slam/lio_3d_interface.hpp>
 
@@ -126,6 +131,39 @@ class LIO3DNode : public rclcpp::Node {
     this->get_parameter("odom_frame", odom_frame_);
     this->get_parameter("imu_frame", imu_frame_);
 
+    // Trajectory saving parameters
+    this->declare_parameter<bool>("save_trajectory", false);
+    this->get_parameter("save_trajectory", save_trajectory_);
+
+    this->declare_parameter<std::string>("trajectory_dir", "tmp/pslam/trajectory");
+    this->get_parameter("trajectory_dir", trajectory_dir_base_);
+
+    if (save_trajectory_) {
+      // create timestamped directory
+      const auto now = std::chrono::system_clock::now();
+      const std::time_t t = std::chrono::system_clock::to_time_t(now);
+      std::tm tm{};
+      localtime_r(&t, &tm);
+      std::ostringstream oss;
+      oss << std::put_time(&tm, "%Y%m%d_%H%M%S");
+      trajectory_dir_ = trajectory_dir_base_ + "/" + oss.str();
+      try {
+        std::filesystem::create_directories(trajectory_dir_);
+      } catch (const std::filesystem::filesystem_error & e) {
+        RCLCPP_WARN(this->get_logger(), "Failed to create trajectory dir: %s", e.what());
+      }
+
+      const std::string traj_file = trajectory_dir_ + "/trajectory.txt";
+      trajectory_ofs_.open(traj_file, std::ios::out | std::ios::trunc);
+      if (!trajectory_ofs_.is_open()) {
+        RCLCPP_WARN(this->get_logger(), "Failed to open trajectory file: %s", traj_file.c_str());
+      } else {
+        trajectory_ofs_.setf(std::ios::fixed, std::ios::floatfield);
+        trajectory_ofs_ << std::setprecision(9);
+        RCLCPP_INFO(this->get_logger(), "Trajectory will be saved to: %s", traj_file.c_str());
+      }
+    }
+
     this->declare_parameter<bool>("publish_tf", true);
     this->get_parameter("publish_tf", publish_tf_);
 
@@ -188,6 +226,17 @@ class LIO3DNode : public rclcpp::Node {
     // Publish ROS messages
     const Sophus::SE3f imu_pose = lio_.GetIMUPose();
     PublishPose(imu_pose_pub_, odom_frame_, msg->header.stamp, imu_pose);
+
+    // Save trajectory in TUM format if enabled
+    if (save_trajectory_ && trajectory_ofs_.is_open()) {
+      const double stamp = rclcpp::Time(msg->header.stamp).seconds();
+      const Eigen::Vector3f t = imu_pose.translation();
+      const Eigen::Quaternionf q(imu_pose.rotationMatrix());
+      // TUM format: timestamp x y z q_x q_y q_z q_w
+      trajectory_ofs_ << stamp << ' '
+                      << t.x() << ' ' << t.y() << ' ' << t.z() << ' '
+                      << q.x() << ' ' << q.y() << ' ' << q.z() << ' ' << q.w() << '\n';
+    }
 
     if (publish_tf_) {
       BroadcastTransform(tf_broadcaster_, odom_frame_, imu_frame_,
@@ -273,6 +322,12 @@ class LIO3DNode : public rclcpp::Node {
   std::string odom_frame_;
   std::string imu_frame_;
   bool publish_tf_;
+
+  // Trajectory saving
+  bool save_trajectory_ = false;
+  std::string trajectory_dir_base_;
+  std::string trajectory_dir_;
+  std::ofstream trajectory_ofs_;
 
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 

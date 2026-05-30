@@ -140,6 +140,12 @@ If you want to construct a standard transformation tree for navigation, such as 
 
 The main source files of Plain SLAM are organized into an **interface layer** and **core modules**, as illustrated in the overview figure. The total C++ implementation of the Plain SLAM components consists of fewer than 1,900 lines of code, excluding blank lines and comments.
 
+## System Architecture (IEEE 42010 Component-and-Connector View)
+
+![system_architecture](figs/system_architecture.svg)
+
+This diagram provides an IEEE 42010-style component-and-connector view of the system, highlighting the ROS 2 nodes, core algorithm interfaces, configuration inputs, and data flow between LiDAR/IMU sensors, mapping storage, and published outputs.
+
 The result of the code analysis using `cloc` is as follows (executed via `code_stats.sh`):
 
 ```
